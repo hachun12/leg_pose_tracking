@@ -1,0 +1,13 @@
+front_camera:
+  camera_name: front_zed2i
+  rgb_topic: /front_camera/color/image_rect
+  depth_topic: /front_camera/aligned_depth_to_color/image_raw
+  camera_info_topic: /front_camera/color/camera_info
+  optical_frame: front_camera_color_optical_frame
+
+side_camera:
+  camera_name: side_zed2i
+  rgb_topic: /side_camera/color/image_rect
+  depth_topic: /side_camera/aligned_depth_to_color/image_raw
+  camera_info_topic: /side_camera/color/camera_info
+  optical_frame: side_camera_color_optical_frame

@@ -1,0 +1,13 @@
+header:
+  frame_id: leg_tracking_frame
+child_frame_id: side_camera_link
+transform:
+  translation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+  rotation:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    w: 1.0

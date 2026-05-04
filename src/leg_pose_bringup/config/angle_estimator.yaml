@@ -1,0 +1,9 @@
+angle_estimator_node:
+  ros__parameters:
+    input_topic: /leg_pose/keypoints_3d
+    output_topic: /leg_pose/joint_angles
+    min_angle_confidence: 0.35
+    neutral_pose_file: ""
+    filter_type: lowpass
+    filter_cutoff_hz: 6.0
+    apply_neutral_offsets: true

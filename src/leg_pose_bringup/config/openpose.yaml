@@ -1,0 +1,6 @@
+openpose:
+  ros__parameters:
+    body_model: BODY_25
+    min_keypoint_confidence: 0.35
+    net_resolution: "-1x368"
+    gpu_id: 0

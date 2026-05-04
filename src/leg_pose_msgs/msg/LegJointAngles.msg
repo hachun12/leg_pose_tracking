@@ -1,0 +1,14 @@
+std_msgs/Header header
+string side
+float32 hip_flexion_extension_deg
+float32 knee_flexion_deg
+float32 ankle_dorsi_plantar_deg
+float32 ankle_inversion_eversion_deg
+float32 hip_confidence
+float32 knee_confidence
+float32 ankle_dorsi_confidence
+float32 ankle_inversion_confidence
+bool hip_valid
+bool knee_valid
+bool ankle_dorsi_valid
+bool ankle_inversion_valid

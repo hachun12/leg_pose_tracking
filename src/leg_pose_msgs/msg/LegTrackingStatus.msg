@@ -1,0 +1,12 @@
+std_msgs/Header header
+float32 openpose_fps
+float32 angle_publish_hz
+float32 end_to_end_latency_ms
+float32 camera_timestamp_delta_ms
+uint16 lost_keypoint_count
+float32 depth_invalid_ratio
+bool front_camera_connected
+bool side_camera_connected
+bool tf_available
+bool calibration_loaded
+string[] warnings

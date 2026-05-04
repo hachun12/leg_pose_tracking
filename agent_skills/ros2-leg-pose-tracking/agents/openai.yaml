@@ -1,0 +1,3 @@
+display_name: ROS2 Leg Pose Tracking
+short_description: Build ROS2 OpenPose leg-angle tracking with two ZED 2i cameras.
+default_prompt: Plan or implement the ROS2 leg pose tracking pipeline according to the project spec, including camera input, OpenPose keypoints, 3D fusion, joint angle publishing, GUI, launch files, and validation.
