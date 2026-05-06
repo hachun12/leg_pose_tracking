@@ -33,13 +33,12 @@ class StatusGuiNode(Node):
         msg = self._last_angles
         status = self._status_summary()
         self.get_logger().info(
-            "angles side=%s hip=%.1f knee=%.1f ankle_dp=%.1f ankle_ie=%.1f%s"
+            "angles side=%s hip=%.1f knee=%.1f ankle_dp=%.1f%s"
             % (
                 msg.side,
                 msg.hip_flexion_extension_deg,
                 msg.knee_flexion_deg,
                 msg.ankle_dorsi_plantar_deg,
-                msg.ankle_inversion_eversion_deg,
                 status,
             )
         )

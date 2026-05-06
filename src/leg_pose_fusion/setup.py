@@ -26,6 +26,7 @@ setup(
         'console_scripts': [
             'keypoint_fusion_node = leg_pose_fusion.keypoint_fusion_node:main',
             'angle_estimator_node = leg_pose_fusion.angle_estimator_node:main',
+            'angle_safety_gate_node = leg_pose_fusion.angle_safety_gate_node:main',
             'synthetic_keypoints_node = leg_pose_fusion.synthetic_keypoints_node:main',
         ],
     },

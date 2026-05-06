@@ -11,7 +11,6 @@ from .angle_filter import AngleFilterSet
 from .geometry import (
     Vec3,
     ankle_dorsi_plantar_deg,
-    ankle_inversion_eversion_deg,
     hip_flexion_extension_deg,
     knee_flexion_deg,
 )
@@ -66,7 +65,6 @@ class AngleEstimatorNode(Node):
                 "hip": hip_flexion_extension_deg(hip, knee),
                 "knee": knee_flexion_deg(hip, knee, ankle),
                 "ankle_dorsi": ankle_dorsi_plantar_deg(knee, ankle, heel, toe),
-                "ankle_inversion": ankle_inversion_eversion_deg(heel, toe),
             }
         except ValueError as exc:
             self.get_logger().debug(str(exc))
@@ -78,7 +76,6 @@ class AngleEstimatorNode(Node):
         out.hip_flexion_extension_deg = angles["hip"]
         out.knee_flexion_deg = angles["knee"]
         out.ankle_dorsi_plantar_deg = angles["ankle_dorsi"]
-        out.ankle_inversion_eversion_deg = angles["ankle_inversion"]
 
         out.hip_confidence = min(points["hip"][1], points["knee"][1])
         out.knee_confidence = min(points["hip"][1], points["knee"][1], points["ankle"][1])
@@ -88,11 +85,9 @@ class AngleEstimatorNode(Node):
             points["heel"][1],
             points["toe"][1],
         )
-        out.ankle_inversion_confidence = min(points["heel"][1], points["toe"][1])
         out.hip_valid = valid and out.hip_confidence >= min_conf
         out.knee_valid = valid and out.knee_confidence >= min_conf
         out.ankle_dorsi_valid = valid and out.ankle_dorsi_confidence >= min_conf
-        out.ankle_inversion_valid = valid and out.ankle_inversion_confidence >= min_conf
         self._publisher.publish(out)
 
     def _stamp_to_seconds(self, msg: LegKeypoints3D) -> float:
@@ -118,10 +113,6 @@ class AngleEstimatorNode(Node):
             "hip": self._filters.hip.update(angles["hip"], dt_s),
             "knee": self._filters.knee.update(angles["knee"], dt_s),
             "ankle_dorsi": self._filters.ankle_dorsi.update(angles["ankle_dorsi"], dt_s),
-            "ankle_inversion": self._filters.ankle_inversion.update(
-                angles["ankle_inversion"],
-                dt_s,
-            ),
         }
 
     def _capture_neutral(self, _request, response):
@@ -144,7 +135,6 @@ class AngleEstimatorNode(Node):
             "hip": 0.0,
             "knee": 0.0,
             "ankle_dorsi": 0.0,
-            "ankle_inversion": 0.0,
         }
         if not path or not os.path.exists(path):
             return defaults
@@ -167,6 +157,9 @@ def main(args=None) -> None:
     node = AngleEstimatorNode()
     try:
         rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()

@@ -15,8 +15,14 @@ setup(
         ('share/' + package_name, ['package.xml']),
         (os.path.join('share', package_name, 'launch'), glob('launch/*.launch.py')),
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
-        (os.path.join('share', package_name, 'config', 'cameras'), glob('config/cameras/*.yaml')),
-        (os.path.join('share', package_name, 'config', 'calibration'), glob('config/calibration/*.yaml')),
+        (
+            os.path.join('share', package_name, 'config', 'cameras'),
+            glob('config/cameras/*.yaml'),
+        ),
+        (
+            os.path.join('share', package_name, 'config', 'calibration'),
+            glob('config/calibration/*.yaml'),
+        ),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

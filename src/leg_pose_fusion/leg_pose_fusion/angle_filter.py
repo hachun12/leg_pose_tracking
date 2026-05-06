@@ -25,10 +25,8 @@ class AngleFilterSet:
         self.hip = LowPassFilter(cutoff_hz)
         self.knee = LowPassFilter(cutoff_hz)
         self.ankle_dorsi = LowPassFilter(cutoff_hz)
-        self.ankle_inversion = LowPassFilter(cutoff_hz)
 
     def reset(self) -> None:
         self.hip.reset()
         self.knee.reset()
         self.ankle_dorsi.reset()
-        self.ankle_inversion.reset()

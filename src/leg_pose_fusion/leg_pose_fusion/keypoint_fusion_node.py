@@ -31,6 +31,16 @@ class KeypointFusionNode(Node):
         self.declare_parameter("depth_window_px", 2)
         self.declare_parameter("min_depth_m", 0.25)
         self.declare_parameter("max_depth_m", 8.0)
+        self.declare_parameter(
+            "front_depth_topic",
+            "/front_camera/aligned_depth_to_color/image_raw",
+        )
+        self.declare_parameter("front_camera_info_topic", "/front_camera/color/camera_info")
+        self.declare_parameter(
+            "side_depth_topic",
+            "/side_camera/aligned_depth_to_color/image_raw",
+        )
+        self.declare_parameter("side_camera_info_topic", "/side_camera/color/camera_info")
         self._front = CameraState()
         self._side = CameraState()
         self._tf_buffer = Buffer()
@@ -50,25 +60,25 @@ class KeypointFusionNode(Node):
         )
         self.create_subscription(
             Image,
-            "/front_camera/aligned_depth_to_color/image_raw",
+            self.get_parameter("front_depth_topic").value,
             lambda msg: self._set_depth(self._front, msg),
             10,
         )
         self.create_subscription(
             Image,
-            "/side_camera/aligned_depth_to_color/image_raw",
+            self.get_parameter("side_depth_topic").value,
             lambda msg: self._set_depth(self._side, msg),
             10,
         )
         self.create_subscription(
             CameraInfo,
-            "/front_camera/color/camera_info",
+            self.get_parameter("front_camera_info_topic").value,
             lambda msg: self._set_camera_info(self._front, msg),
             10,
         )
         self.create_subscription(
             CameraInfo,
-            "/side_camera/color/camera_info",
+            self.get_parameter("side_camera_info_topic").value,
             lambda msg: self._set_camera_info(self._side, msg),
             10,
         )
@@ -109,6 +119,7 @@ class KeypointFusionNode(Node):
                 else:
                     point.point = transformed
             out.keypoints.append(point)
+        _append_synthesized_toe(out)
         self._publisher.publish(out)
 
     def _to_target_frame(self, projected, source_frame: str):
@@ -134,6 +145,22 @@ def _apply_transform(point: Point, transform) -> Point:
         y=rotated.y + transform.translation.y,
         z=rotated.z + transform.translation.z,
     )
+
+
+def _append_synthesized_toe(msg: LegKeypoints3D) -> None:
+    points = {keypoint.name: keypoint for keypoint in msg.keypoints}
+    if "toe" in points or "big_toe" not in points or "small_toe" not in points:
+        return
+    big_toe = points["big_toe"]
+    small_toe = points["small_toe"]
+    toe = LegKeypoint3D()
+    toe.name = "toe"
+    toe.confidence = min(big_toe.confidence, small_toe.confidence)
+    toe.valid = big_toe.valid and small_toe.valid
+    toe.point.x = 0.5 * (big_toe.point.x + small_toe.point.x)
+    toe.point.y = 0.5 * (big_toe.point.y + small_toe.point.y)
+    toe.point.z = 0.5 * (big_toe.point.z + small_toe.point.z)
+    msg.keypoints.append(toe)
 
 
 def _rotate_point(point: Point, q) -> Point:
@@ -165,6 +192,9 @@ def main(args=None) -> None:
     node = KeypointFusionNode()
     try:
         rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
     finally:
         node.destroy_node()
-        rclpy.shutdown()
+        if rclpy.ok():
+            rclpy.shutdown()
