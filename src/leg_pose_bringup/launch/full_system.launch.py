@@ -55,10 +55,11 @@ def generate_launch_description():
             keypoint_fusion,
             Node(
                 package="leg_pose_fusion",
-                executable="angle_estimator_node",
-                name="angle_estimator_node",
+                executable="angle_estimator_2d_node",
+                name="angle_estimator_2d_node",
                 parameters=[
                     {
+                        "input_topic": "/leg_pose/side/keypoints_2d",
                         "output_topic": "/leg_pose/joint_angles_raw",
                     }
                 ],

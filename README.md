@@ -1,6 +1,6 @@
 # ROS2 Leg Pose Tracking
 
-ROS2 Humble project for tracking sagittal-plane leg motion with one side-view ZED 2i camera, OpenPose keypoints, ZED depth back-projection, angle publishing, and GUI/status visualization.
+ROS2 Humble project for tracking sagittal-plane leg motion with one side-view ZED 2i camera, OpenPose 2D keypoints, angle publishing, and GUI/status visualization.
 
 ## Current Scaffold
 
@@ -9,7 +9,7 @@ Packages:
 - `leg_pose_msgs`: custom messages for 2D/3D keypoints, joint angles, and tracking status.
 - `leg_pose_camera`: ZED 2i status/camera adapter scaffold.
 - `leg_pose_openpose`: OpenPose adapter with optional Python binding backend; falls back to image passthrough if OpenPose is unavailable.
-- `leg_pose_fusion`: depth back-projection, TF transform support, synthetic demo keypoints, and vector-based angle math core.
+- `leg_pose_fusion`: 2D live angle estimation, depth back-projection debug path, synthetic demo keypoints, and vector-based angle math core.
 - `leg_pose_gui`: Qt GUI, console status fallback, and topic monitor for angle publish rate.
 - `leg_pose_bringup`: launch and config files.
 
@@ -44,6 +44,11 @@ The live system publishes:
 /leg_pose/joint_angles_raw
 /leg_pose/joint_angles
 ```
+
+Live angle estimation uses the side-view 2D skeleton from
+`/leg_pose/side/keypoints_2d`. ZED depth back-projection still publishes
+`/leg_pose/keypoints_3d` for debugging, but it is not used for the live control
+angle path because intermittent invalid depth can cause unstable angle validity.
 
 The tracked angles are:
 

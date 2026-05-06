@@ -4,7 +4,7 @@ Read this file first when continuing the project.
 
 ## Project Goal
 
-Build a ROS 2 Humble system that tracks side-view leg angles using one ZED 2i camera and OpenPose:
+Build a ROS 2 Humble system that tracks side-view leg angles using one ZED 2i camera and OpenPose 2D keypoints:
 
 - Hip flexion/extension.
 - Knee flexion.
@@ -21,7 +21,7 @@ Implemented packages:
 - `leg_pose_msgs`: custom ROS messages.
 - `leg_pose_camera`: ZED status monitor scaffold.
 - `leg_pose_openpose`: OpenPose adapter with optional Python backend and passthrough fallback.
-- `leg_pose_fusion`: depth back-projection, TF transform, angle math, low-pass filter, neutral pose service, synthetic keypoints.
+- `leg_pose_fusion`: 2D angle estimator, depth back-projection debug path, TF transform, angle math, low-pass filter, neutral pose service, synthetic keypoints.
 - `leg_pose_gui`: Qt GUI, console fallback, topic monitor.
 - `leg_pose_bringup`: demo/full/gui/replay/record launch files and config.
 
@@ -35,7 +35,8 @@ Current target machine baseline:
 - Front ZED 2i serial `34108459` is available as `/dev/video0`.
 - OpenPose Python binding is built under `external/openpose` with BODY_25, CUDA 13.0, and cuDNN 9.21.1.
 - The active application scope was simplified to one side-view camera. The same physical ZED can be launched as `side_zed`; the former front-camera path is no longer required.
-- Safety gate is now part of the live path. `angle_estimator_node` publishes `/leg_pose/joint_angles_raw`; `angle_safety_gate_node` publishes final `/leg_pose/joint_angles`.
+- Live control angles now come from `angle_estimator_2d_node` using `/leg_pose/side/keypoints_2d` image x/y coordinates. The 3D `/leg_pose/keypoints_3d` path remains available for debug, but live control no longer depends on ZED depth validity.
+- Safety gate is now part of the live path. `angle_estimator_2d_node` publishes `/leg_pose/joint_angles_raw`; `angle_safety_gate_node` publishes final `/leg_pose/joint_angles`.
 - Live launch defaults to safety gate OFF, which passes complete valid raw detections through. If the current raw detection is invalid, `angle_safety_gate_node` republishes the last complete valid detected angle with frame id `hold_last_valid`; before any valid detection exists it suppresses invalid output. Turning safety gate ON via `/leg_pose/set_safety_gate_enabled` or the Qt GUI publishes the configured fixed safe angles instead.
 - Default safe angles are in `src/leg_pose_bringup/config/safety_gate.yaml`. The Qt GUI reads and writes those live node parameters through `/angle_safety_gate_node/get_parameters` and `/angle_safety_gate_node/set_parameters`, so the safe angles can be edited at runtime without code changes.
 
@@ -175,11 +176,8 @@ angles side=right ... | angle_hz=30.0
 4. Edit safe angle defaults in `src/leg_pose_bringup/config/safety_gate.yaml`, or tune them live from the Qt GUI's `Safety Gate Angles` controls.
 5. Tune:
    - `min_keypoint_confidence`
-   - `depth_window_px`
-   - `min_depth_m`
-   - `max_depth_m`
    - `filter_cutoff_hz`
-    - angle sign conventions
+   - 2D angle sign conventions
 6. Capture neutral pose and verify zeroed angles.
 7. Record rosbag sessions and replay them for GUI/algorithm tuning.
 
@@ -187,13 +185,13 @@ angles side=right ... | angle_hz=30.0
 
 - Keep OpenPose-specific objects inside `leg_pose_openpose`.
 - The OpenPose Python API requires `op.VectorDatum([datum])` for `emplaceAndPop`; a plain Python list fails with this build.
-- BODY_25 emits `big_toe` and `small_toe`; `keypoint_fusion_node` synthesizes `toe` for the angle estimator.
+- BODY_25 emits `big_toe` and `small_toe`; `angle_estimator_2d_node` synthesizes `toe` for live 2D angles, and `keypoint_fusion_node` also synthesizes it for the 3D debug path.
 - Side-view mode intentionally leaves ankle inversion/eversion unused. The ROS message fields remain for compatibility, but GUI/console output hides them and the estimator does not compute them.
 - In multi-person scenes, `leg_pose_openpose` selects the person with the largest confident lower-body keypoint box as a practical nearest-person proxy.
 - Do not bypass `angle_safety_gate_node` for robot control. Downstream machines should subscribe to `/leg_pose/joint_angles`, not `/leg_pose/joint_angles_raw`.
 - Keep ZED wrapper-specific topic names in launch/config, not core math.
-- Keep angle math unit-tested with synthetic 3D points.
-- Do not compute final angles from raw 2D pixels.
+- Keep angle math unit-tested with synthetic 3D points and live 2D image keypoints.
+- Live final angles intentionally come from side-view 2D keypoint pixels to avoid intermittent invalid ZED depth.
 - Propagate confidence and validity instead of hiding invalid data.
 - Keep `demo.launch.py` working after every change.
 

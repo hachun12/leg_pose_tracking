@@ -3,7 +3,7 @@
 <package format="3">
   <name>leg_pose_fusion</name>
   <version>0.0.0</version>
-  <description>3D keypoint fusion and leg joint angle estimation nodes.</description>
+  <description>2D/3D keypoint fusion and leg joint angle estimation nodes.</description>
   <maintainer email="hachun@todo.todo">hachun</maintainer>
   <license>Apache-2.0</license>
 
